@@ -1,0 +1,56 @@
+version: '3.9'
+
+volumes:
+  notifications_backend_postgres_data: {}
+  notifications_backend_postgres_data_backups: {}
+
+x-base:
+  &notifications_backend
+  build:
+    context: .
+    dockerfile: build/local/Dockerfile
+  platform: linux/x86_64
+  depends_on:
+    - postgres
+    - redis
+    - rabbitmq
+  volumes:
+    - ./src:/src:z
+  env_file:
+    - .env
+  networks:
+    - default
+
+services:
+  backend:
+    <<: *notifications_backend
+    ports:
+      - '8002:8002'
+
+  postgres:
+    image: postgres:14.4
+    volumes:
+      - notifications_backend_postgres_data:/var/lib/postgresql/data
+      - ./db_dumps:/db_dumps:z
+    env_file:
+      - .env
+    ports:
+      - '5430:5432'
+
+  rabbitmq:
+    image: rabbitmq:management
+    logging:
+      driver: none
+    networks:
+      default:
+
+  redis:
+    image: redis:6
+    logging:
+      driver: none
+    networks:
+      default:
+
+networks:
+  default:
+    enable_ipv6: false

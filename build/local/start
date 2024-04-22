@@ -1,0 +1,14 @@
+#!/bin/bash
+
+set -o errexit
+set -o pipefail
+set -o nounset
+
+container_type=${CONTAINER_TYPE-BACKEND};
+log_level=${LOG_LEVEL:-DEBUG}
+workers=${WORKERS-2}
+
+#python manage.py collectstatic --noinput --clear
+#python manage.py migrate --noinput
+#uvicorn config.asgi:application --host 0.0.0.0 --port 8002 --workers "$workers" --reload
+python manage.py runserver 0.0.0.0:8002
