@@ -8,6 +8,8 @@
 <body style="display: flex;align-items: center;justify-content: center;height: 100vh; flex-direction: column">
     <h1>WS notifications application demo</h1>
 
+    <h2 id="room-name-field">Entered room ID</h2>
+
     <h3>Login Form</h3>
 
     <form id="login-form">
@@ -27,6 +29,9 @@
         const form = document.getElementById("login-form");
         const tokenLog = document.getElementById("token-log");
         form.addEventListener("submit", logSubmit);
+
+        const roomName = JSON.parse(document.getElementById('room-name').textContent);
+        document.getElementById('room-name-field').textContent += (' ' + roomName)
 
         function logSubmit(event) {
             let username = document.getElementById("login-username").value
@@ -60,7 +65,6 @@
         }
 
         function ListenWs(token) {
-            const roomName = JSON.parse(document.getElementById('room-name').textContent);
             const chatSocket = new WebSocket(
                 'ws://'
                 + window.location.host
