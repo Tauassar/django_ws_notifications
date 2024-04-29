@@ -1,95 +1,37 @@
 <!-- chat/templates/chat/room.html -->
+{% verbatim %}
+
 <!DOCTYPE html>
 <html>
-<head>
-    <meta charset="utf-8"/>
-    <title>Notification Room</title>
-</head>
-<body style="display: flex;align-items: center;justify-content: center;height: 100vh; flex-direction: column">
-    <h1>WS notifications application demo</h1>
+    <head>
+        <meta charset="utf-8"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <h2 id="room-name-field">Entered room ID</h2>
+        <title>Демонстрационная страница сервиса нотификаций</title>
+        <script src="/api/static/js/vue.global.js"></script>
+        <script src="https://unpkg.com/vuex@4.0.0/dist/vuex.global.js"></script>
+        <script src="/api/static/js/notifications_page_script.js" type="module"></script>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+        <link
+          rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bulma@1.0.0/css/bulma.min.css"
+        >
+    </head>
+    <body>
+        <div id="app">
+            <section class="section is-flex is-flex-direction-column" style="max-height: 100vh">
+                <header>
+                    <div class="container">
+                      <h1 class="title">
+                        Демонстрационная страница сервиса нотификаций
+                      </h1>
+                    </div>
+                    <login-form class="mt-3"></login-form>
+                </header>
+                <messages-box class="mt-3" style="flex: 1 1 auto"></messages-box>
 
-    <h3>Login Form</h3>
-
-    <form id="login-form">
-        Username: <input id="login-username" type="text" name="username"><br><br>
-        Password: <input id="login-password" type="text" name="password"><br><br>
-    <button id="login-submit-button" type="submit">login</button>
-    </form>
-
-    <h3>Token</h3>
-    <textarea disabled id="token-log" cols="100" rows="5"></textarea><br>
-
-    <h3>WS notifications</h3>
-    <textarea disabled id="chat-log" cols="100" rows="20"></textarea><br>
-    {{ room_name|json_script:"room-name" }}
-
-    <script>
-        const form = document.getElementById("login-form");
-        const tokenLog = document.getElementById("token-log");
-        form.addEventListener("submit", logSubmit);
-
-        const roomName = JSON.parse(document.getElementById('room-name').textContent);
-        document.getElementById('room-name-field').textContent += (' ' + roomName)
-
-        function logSubmit(event) {
-            let username = document.getElementById("login-username").value
-            let password = document.getElementById("login-password").value
-
-            console.log(username)
-            console.log(password)
-
-            fetch(
-                "http://"+window.location.host+"/api/users/token/",
-                {
-                    method: "POST",
-                    body: JSON.stringify({
-                      "username": username,
-                      "password": password
-                    }),
-                    headers: {
-                        "Content-type": "application/json; charset=UTF-8"
-                    }
-                }
-            )
-            .then((response) => response.json())
-            .then((json) => {
-                console.log(json.access)
-                tokenLog.textContent = `Token received! ${json.access}`;
-                ListenWs(json.access)
-            })
-
-            tokenLog.textContent = `Form Submitted! Timestamp: ${event.timeStamp}`;
-            event.preventDefault();
-        }
-
-        function ListenWs(token) {
-            const chatSocket = new WebSocket(
-                'ws://'
-                + window.location.hostname
-                + ':8003'
-                + '/ws/notifications/'
-                + roomName
-                + '/?token=' + token
-            );
-
-            chatSocket.onmessage = function(e) {
-                const data = JSON.parse(e.data);
-                document.querySelector('#chat-log').value += ('Incoming message: ' + e.data + '\n');
-                let response = JSON.stringify({
-                    'type': 'message_ack',
-                    'key': data.key
-                })
-                chatSocket.send(response);
-                document.querySelector('#chat-log').value += ('Outgoing message: ' + response + '\n');
-            };
-
-            chatSocket.onclose = function(e) {
-                console.error('Chat socket closed unexpectedly');
-            };
-        }
-
-    </script>
-</body>
+            </section>
+        </div>
+    </body>
 </html>
+{% endverbatim %}

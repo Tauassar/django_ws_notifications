@@ -45,7 +45,5 @@ class SendNotificationView(GenericAPIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-def room(request, user_id):
-    return render(request, 'notifications/room.html', {
-        'room_name': user_id,
-    })
+def room(request):
+    return render(request, 'notifications/room.html', {})
