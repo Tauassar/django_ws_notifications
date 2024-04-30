@@ -37,17 +37,64 @@ class NotificationsConsumer(AsyncJsonWebsocketConsumer):
             self.channel_name,
         )
 
+    async def send_message_processing_error(self, message: str):
+        await self.send(
+            text_data=json.dumps(
+                {
+                    "type": "message_processing_error",
+                    "value": message,
+                }
+            )
+        )
+
+    async def command_ping(self):
+        await self.send(
+            text_data=json.dumps(
+                {
+                    "type": "command_processing_result",
+                    "key": "ping",
+                    "value": "pong",
+                }
+            )
+        )
+
     # Receive message from WebSocket
     async def receive_json(self, content, **kwargs):
-        message_type = content['type']
-        if message_type == 'message_ack':
-            value_key = content['key']
+        message_type = content["type"]
+        if message_type == "message_ack":
+            # Message handling logic
+            value_key = content["key"]
             await self.channel_layer.acknowledge_message(
                 self.room_group_name,
                 value_key,
             )
             logger.info(
                 f'Notification with key: {content["key"]} acknowledged',
+            )
+        elif message_type == "command":
+            # Command handling logic
+            value_key = content["key"]
+            handler_name = f"command_{value_key}"
+
+            if hasattr(self, handler_name):
+                command = getattr(self, handler_name)
+                await command()
+            else:
+                await self.send_message_processing_error(
+                    f"Could not recognize command {value_key}",
+                )
+
+            await self.channel_layer.acknowledge_message(
+                self.room_group_name,
+                value_key,
+            )
+            logger.info(
+                f'Notification with key: {content["key"]} acknowledged',
+            )
+        else:
+            # Default response for unmatched message type
+            await self.send_message_processing_error(
+                f'Unknown message type {message_type == "command"}',
             )
 
     # Receive message from room group
