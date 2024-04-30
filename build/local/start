@@ -11,4 +11,11 @@ workers=${WORKERS-2}
 #python manage.py collectstatic --noinput --clear
 #python manage.py migrate --noinput
 #uvicorn config.asgi:application --host 0.0.0.0 --port 8002 --workers "$workers" --reload
-python manage.py runserver 0.0.0.0:8002
+#python manage.py runserver 0.0.0.0:8002
+
+if [ $container_type = "BACKEND" ]; then
+	python manage.py runserver 0.0.0.0:8002
+
+elif [ $container_type = "WS_BACKEND" ]; then
+  uvicorn config.asgi:application --host 0.0.0.0 --port 8002 --workers "$workers" --reload
+fi;

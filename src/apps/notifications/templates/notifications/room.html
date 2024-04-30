@@ -67,7 +67,8 @@
         function ListenWs(token) {
             const chatSocket = new WebSocket(
                 'ws://'
-                + window.location.host
+                + window.location.hostname
+                + ':8003'
                 + '/ws/notifications/'
                 + roomName
                 + '/?token=' + token
