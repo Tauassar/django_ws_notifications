@@ -1,21 +1,21 @@
+import { prettyPrintJson } from '../pretty-print-json.js';
+
 const messagesComponent = {
     template:
     `
         <div 
-            class="card column is-11"
-            :class="{ 'is-align-self-flex-end': !isIncomingMessage, 'has-text-right': !isIncomingMessage, 'has-background-link-dark': !isIncomingMessage, 'has-background-primary-dark': isIncomingMessage}"
+            class="card column is-11 has-background-primary-dark"
+            :class="getOuterDivClasses()"
         >
         
           <header class="card-header">
-            <p class="card-header-title" v-if="isIncomingMessage">Исходящее сообщение</p>
-            <p class="card-header-title is-justify-content-end" v-else>Входящее сообщение</p>
+            <p class="card-header-title is-justify-content-end" v-if="!isIncomingMessage">Исходящее сообщение</p>
+            <p class="card-header-title" v-else>Входящее сообщение</p>
           </header>
           
           <div class="card-content">
-            
-            <div class="content">
-              {{ content }}
-            </div>
+            <p>{{timestamp}}</p>
+            <div class="content" v-html="toPrettyJson(content)" />
           </div>
         </div>
     `,
@@ -25,8 +25,13 @@ const messagesComponent = {
             required: true,
         },
         content: {
-            type: String,
+            type: Object,
             required: true,
+        },
+        timestamp: {
+            type: Date,
+            required: false,
+            default: new Date()
         }
     },
     data() {
@@ -34,6 +39,28 @@ const messagesComponent = {
 
         }
     },
-    methods: {},
+    methods: {
+        toPrettyJson(content) {
+            return prettyPrintJson.toHtml(
+                content,
+                {
+                    trailingCommas: false,
+                    quoteKeys: true,
+                    lineNumbers: true
+                }
+            );
+        },
+        getOuterDivClasses(){
+            if(this.isIncomingMessage) {
+                return []
+            } else {
+                return [
+                    'is-align-self-flex-end',
+                    'has-text-right',
+                ]
+            }
+        }
+    },
+    computed: {}
 }
 export default messagesComponent;

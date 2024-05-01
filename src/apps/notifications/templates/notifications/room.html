@@ -9,13 +9,13 @@
 
         <title>Демонстрационная страница сервиса нотификаций</title>
         <script src="/api/static/js/vue.global.js"></script>
-        <script src="https://unpkg.com/vuex@4.0.0/dist/vuex.global.js"></script>
         <script src="/api/static/js/notifications_page_script.js" type="module"></script>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
         <link
           rel="stylesheet"
-          href="https://cdn.jsdelivr.net/npm/bulma@1.0.0/css/bulma.min.css"
+          href="/api/static/css/bulma.min.css"
         >
+        <link rel="stylesheet" type="text/css" href="/api/static/css/toastify.min.css">
     </head>
     <body>
         <div id="app">
@@ -32,6 +32,7 @@
 
             </section>
         </div>
+        <script type="text/javascript" src="/api/static/js/toast.js"></script>
     </body>
 </html>
 {% endverbatim %}
