@@ -4,15 +4,11 @@ import logging
 from asyncio import Task
 from typing import Optional
 
-from autobahn.exception import Disconnected
 from channels.exceptions import StopConsumer
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
-
+from websockets.exceptions import ConnectionClosed
 
 logger = logging.getLogger(__name__)
-
-
-AUTH_EXPIRED_CODE = 4013
 
 
 class NotificationsConsumer(AsyncJsonWebsocketConsumer):
@@ -26,9 +22,9 @@ class NotificationsConsumer(AsyncJsonWebsocketConsumer):
     async def expire_connection(self):
         await asyncio.sleep(30)
         try:
-            await self.websocket_disconnect({"code": AUTH_EXPIRED_CODE})
+            await self.websocket_disconnect({"code": 1000})
         except StopConsumer:
-            await self.close(AUTH_EXPIRED_CODE)
+            await self.close()
 
     async def connect(self):
         self.room_name = self.scope['url_route']['kwargs']['room_name']
@@ -65,7 +61,7 @@ class NotificationsConsumer(AsyncJsonWebsocketConsumer):
                     }
                 )
             )
-        except Disconnected:
+        except ConnectionClosed:
             logger.warning("Channel already disconnected, cannot send message processing error")
 
     async def command_ping(self):
@@ -79,7 +75,7 @@ class NotificationsConsumer(AsyncJsonWebsocketConsumer):
                     }
                 )
             )
-        except Disconnected:
+        except ConnectionClosed:
             logger.warning("Channel already disconnected, cannot send pong message")
 
     # Receive message from WebSocket
@@ -129,7 +125,7 @@ class NotificationsConsumer(AsyncJsonWebsocketConsumer):
         logger.info(event)
         try:
             await self.send(text_data=json.dumps(event))
-        except Disconnected:
+        except ConnectionClosed:
             logger.warning('Channel already disconnected, cannot send server notification message')
         logger.debug(f'Sent notification with key: {key} value: {value}')
 
@@ -138,5 +134,5 @@ class NotificationsConsumer(AsyncJsonWebsocketConsumer):
         logger.info(event)
         try:
             await self.send(text_data=json.dumps(event))
-        except Disconnected:
+        except ConnectionClosed:
             logger.warning('Channel already disconnected, cannot send step status event message')
