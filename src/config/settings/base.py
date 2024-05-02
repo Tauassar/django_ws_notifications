@@ -199,7 +199,7 @@ REST_FRAMEWORK = {
 }
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': datetime.timedelta(minutes=1),
+    'ACCESS_TOKEN_LIFETIME': datetime.timedelta(hours=1),
     'REFRESH_TOKEN_LIFETIME': datetime.timedelta(days=1),
     'TOKEN_OBTAIN_SERIALIZER': 'apps.users.serializers.TokenObtainPairWithRoleSerializer',
     "TOKEN_REFRESH_SERIALIZER": "apps.users.serializers.TokenRefreshSerializer",
