@@ -130,13 +130,23 @@ const messagesBox = {
                         type: 'message_ack',
                         key: message.key
                     }
-                    ws.send(
-                        JSON.stringify(out_message)
-                    )
+                    if(message.type==="server_notification"){
+                        ws.send(
+                            JSON.stringify(out_message)
+                        )
+                        this.messages.push(
+                            {
+                                is_incoming: false,
+                                content: out_message,
+                            },
+                        )
+                    }
+                }
+                this.wsManager.onPingFn = () => {
                     this.messages.push(
                         {
                             is_incoming: false,
-                            content: out_message,
+                            content: { type: 'command', key: 'ping' },
                         },
                     )
                 }

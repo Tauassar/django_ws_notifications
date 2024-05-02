@@ -10,6 +10,7 @@ export class WebSocketManager {
     checkMessageFn;
     checkTokenExpiryFn;
     updateTokenFn;
+    onPingFn;
     onOpenConnection;
     onMaxAttemptsReached;
     onMessage;
@@ -81,6 +82,7 @@ export class WebSocketManager {
     if (!this.websocket || this.websocket.readyState !== this.websocket.OPEN) return this.pings++
     this.websocket.send(this.pingMessage)
     this.pings++
+    this.onPingFn()
   }
 
   checkMessage(message) {
