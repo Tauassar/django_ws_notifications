@@ -1,17 +1,34 @@
+import asyncio
 import json
 import logging
+from asyncio import Task
+from typing import Optional
 
+from autobahn.exception import Disconnected
+from channels.exceptions import StopConsumer
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
 
 
 logger = logging.getLogger(__name__)
 
 
+AUTH_EXPIRED_CODE = 4013
+
+
 class NotificationsConsumer(AsyncJsonWebsocketConsumer):
+    expiration_task: Optional[Task] = None
+
     def __init__(self, *args, **kwargs):
         super().__init__(args, kwargs)
         self.room_group_name = None
         self.room_name = None
+
+    async def expire_connection(self):
+        await asyncio.sleep(30)
+        try:
+            await self.websocket_disconnect({"code": AUTH_EXPIRED_CODE})
+        except StopConsumer:
+            await self.close(AUTH_EXPIRED_CODE)
 
     async def connect(self):
         self.room_name = self.scope['url_route']['kwargs']['room_name']
@@ -29,6 +46,7 @@ class NotificationsConsumer(AsyncJsonWebsocketConsumer):
             f'\nroom name: {self.room_name}'
             f'\ngroup_name: {self.room_group_name}',
         )
+        self.expiration_task = asyncio.create_task(self.expire_connection(), name='expire-connection')
 
     async def disconnect(self, close_code):
         # Leave room group
@@ -38,25 +56,31 @@ class NotificationsConsumer(AsyncJsonWebsocketConsumer):
         )
 
     async def send_message_processing_error(self, message: str):
-        await self.send(
-            text_data=json.dumps(
-                {
-                    "type": "message_processing_error",
-                    "value": message,
-                }
+        try:
+            await self.send(
+                text_data=json.dumps(
+                    {
+                        "type": "message_processing_error",
+                        "value": message,
+                    }
+                )
             )
-        )
+        except Disconnected:
+            logger.warning("Channel already disconnected, cannot send message processing error")
 
     async def command_ping(self):
-        await self.send(
-            text_data=json.dumps(
-                {
-                    "type": "command_processing_result",
-                    "key": "ping",
-                    "value": "pong",
-                }
+        try:
+            await self.send(
+                text_data=json.dumps(
+                    {
+                        "type": "command_processing_result",
+                        "key": "ping",
+                        "value": "pong",
+                    }
+                )
             )
-        )
+        except Disconnected:
+            logger.warning("Channel already disconnected, cannot send pong message")
 
     # Receive message from WebSocket
     async def receive_json(self, content, **kwargs):
@@ -103,10 +127,16 @@ class NotificationsConsumer(AsyncJsonWebsocketConsumer):
         key = event['key']
         # Send message to WebSocket
         logger.info(event)
-        await self.send(text_data=json.dumps(event))
+        try:
+            await self.send(text_data=json.dumps(event))
+        except Disconnected:
+            logger.warning('Channel already disconnected, cannot send server notification message')
         logger.debug(f'Sent notification with key: {key} value: {value}')
 
     async def step_status(self, event):
         # Send message to WebSocket
         logger.info(event)
-        await self.send(text_data=json.dumps(event))
+        try:
+            await self.send(text_data=json.dumps(event))
+        except Disconnected:
+            logger.warning('Channel already disconnected, cannot send step status event message')
