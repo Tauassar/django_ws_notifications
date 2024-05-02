@@ -153,7 +153,7 @@ export class WebSocketManager {
   cleanup() {
     console.log('Running cleanup...')
     this.websocket.onclose = function () {}
-    this.websocket.close(4014, "user closed connection")
+    this.websocket.close()
     clearInterval(this.healthCheckId)
     clearInterval(this.reconnectAttemptsId)
   }
