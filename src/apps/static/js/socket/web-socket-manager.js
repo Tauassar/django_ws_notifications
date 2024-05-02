@@ -135,7 +135,8 @@ export class WebSocketManager {
       return this.cleanup()
     }
 
-    if (!this.checkTokenExpiryFn(this.token)){
+    if (this.checkTokenExpiryFn(this.token)){
+      console.log(`Token expired! trying to update!`)
         await this.updateTokenFn()
     }
 
