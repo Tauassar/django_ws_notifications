@@ -10,6 +10,7 @@ from rest_framework_simplejwt.exceptions import AuthenticationFailed
 from rest_framework_simplejwt.exceptions import InvalidToken
 from rest_framework_simplejwt.exceptions import TokenError
 
+from apps.users.tokens import IdentityToken
 
 logger = logging.getLogger(__name__)
 
@@ -36,7 +37,18 @@ class TokenAuthMiddleware(BaseMiddleware):
         try:
             # This will automatically validate the token and raise an error if token is invalid
             jwt_auth = JWTAuthentication()
-            validated_token = jwt_auth.get_validated_token(token)
+
+            try:
+                validated_token = IdentityToken(token)
+            except TokenError as e:
+                raise TokenError(
+                    {
+                        "token_class": IdentityToken.__name__,
+                        "token_type": IdentityToken.token_type,
+                        "message": e.args[0],
+                    }
+                ) from e
+
             user = await sync_to_async(
                 jwt_auth.get_user,
             )(validated_token)
