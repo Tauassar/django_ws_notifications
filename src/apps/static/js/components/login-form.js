@@ -90,7 +90,7 @@ const loginForm = {
             if(response.status == 200 && data.access){
                 log_success("Авторизация выполнена успешно")
                 this.isLoggedIn = true
-                this.$emit("userLoggedIn", data.access)
+                this.$emit("userLoggedIn", data.identity)
             }else if(data.detail){
                 this.isLoggedIn = false
                 log_error(
