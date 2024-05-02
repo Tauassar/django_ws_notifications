@@ -52,6 +52,7 @@ class TokenAuthMiddleware(BaseMiddleware):
             user = await sync_to_async(
                 jwt_auth.get_user,
             )(validated_token)
+            user.expires_at = validated_token.get("exp")
 
         except (InvalidToken, TokenError, AuthenticationFailed) as e:
             # Token is invalid

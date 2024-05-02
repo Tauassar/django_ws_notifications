@@ -1,6 +1,7 @@
 import asyncio
 import json
 import logging
+import time
 from asyncio import Task
 from typing import Optional
 
@@ -20,7 +21,9 @@ class NotificationsConsumer(AsyncJsonWebsocketConsumer):
         self.room_name = None
 
     async def expire_connection(self):
-        await asyncio.sleep(30)
+        user = self.scope["user"]
+        await asyncio.sleep(user.expires_at - time.time())
+
         try:
             await self.websocket_disconnect({"code": 1000})
         except StopConsumer:
