@@ -25,8 +25,8 @@ createApp({
   },
   computed: {},
   methods: {
-    async authorize_user(token) {
-      await this.$refs.messagesBox.connect_ws_channel(token)
+    async authorize_user(token, refresh) {
+      await this.$refs.messagesBox.connect_ws_channel(token, refresh)
     },
     logout_user() {
       this.$refs.messagesBox.disconnect_ws_channel()

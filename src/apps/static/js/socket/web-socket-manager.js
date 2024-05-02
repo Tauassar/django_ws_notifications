@@ -8,6 +8,8 @@ export class WebSocketManager {
 
     // Callbacks
     checkMessageFn;
+    checkTokenExpiryFn;
+    updateTokenFn;
     onOpenConnection;
     onMaxAttemptsReached;
     onMessage;
@@ -16,6 +18,7 @@ export class WebSocketManager {
 
     constructor(
         url,
+        token,
         reconnectOnPingPongFailed = true,
         maxAttempts = 10,
         maxMissedPongs = 5,
@@ -23,6 +26,7 @@ export class WebSocketManager {
         pingInterval = 3000
     ) {
         this.url = url
+        this.token = token
         this.reconnectOnPingPongFailed = reconnectOnPingPongFailed
         this.maxAttempts = maxAttempts
         this.maxMissedPongs = maxMissedPongs
@@ -130,6 +134,11 @@ export class WebSocketManager {
     if (this.websocket && this.websocket.readyState === this.websocket.OPEN) {
       return this.cleanup()
     }
+
+    if (!this.checkTokenExpiryFn(this.token)){
+        await this.updateTokenFn()
+    }
+
     if (this.attempts >= this.maxAttempts && this.websocket && this.websocket.readyState !== this.websocket.OPEN) {
       console.log(`Max attempts reached! Can't connect to socket after ${this.attempts} attempts! Run cleanup!`)
       this.cleanup()

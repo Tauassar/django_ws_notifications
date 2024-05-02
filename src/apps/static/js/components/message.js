@@ -28,16 +28,14 @@ const messagesComponent = {
             type: Object,
             required: true,
         },
-        timestamp: {
-            type: Date,
-            required: false,
-            default: new Date()
-        }
     },
     data() {
         return {
-
+            timestamp: null
         }
+    },
+    created(){
+        this.timestamp = new Date();
     },
     methods: {
         toPrettyJson(content) {

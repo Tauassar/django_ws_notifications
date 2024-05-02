@@ -48,12 +48,7 @@ const messagesBox = {
             </div>
         </div>
     `,
-    props: {
-        token: {
-            type: String,
-            required: true,
-        }
-    },
+    props: {},
     data() {
         return {
             is_hidden: false,
@@ -71,19 +66,58 @@ const messagesBox = {
         this.messages = []
     },
     methods: {
-        async connect_ws_channel(token){
+        async connect_ws_channel(token, refresh){
             try {
                 let roomName = parseJwt(token).user_id
 
                 this.wsManager = new WebSocketManager(
-                        'ws://'
-                        + window.location.hostname
-                        + ':8003'
-                        + '/ws/notifications/'
-                        + roomName
-                        + '/?token=' + token
+                    'ws://'
+                    + window.location.hostname
+                    + ':8003'
+                    + '/ws/notifications/'
+                    + roomName
+                    + '/?token=' + token,
+                    token
                 );
                 this.wsManager.checkMessageFn = message => message.type === 'command_processing_result' && message.value === 'pong'
+
+                this.wsManager.checkTokenExpiryFn = (token) => {
+                  let exp = parseJwt(token).exp;
+                  return Date.now() >= exp * 1000
+                }
+
+                this.wsManager.updateTokenFn = async function() {
+                  let response = await fetch(
+                        "http://"+window.location.host+"/api/users/token/refresh/",
+                        {
+                            method: "POST",
+                            body: JSON.stringify({
+                              "refresh": refresh,
+                            }),
+                            headers: {
+                                "Content-type": "application/json; charset=UTF-8"
+                            }
+                        }
+                    )
+                    let data = await response.json()
+
+                    if(response.status === 200 && data.identity){
+                        console.log("identity token rotation finished successfully")
+                        this.url = (
+                            'ws://'
+                            + window.location.hostname
+                            + ':8003'
+                            + '/ws/notifications/'
+                            + roomName
+                            + '/?token=' + data.identity
+                        )
+                        this.token = data.identity
+                    }else{
+                        log_error(
+                            "Неизвестная ошибка при обновлении авторизационного токена"
+                        )
+                    }
+                }
                 this.wsManager.onMessage = (ws, message) => {
                     this.messages.push(
                         {
