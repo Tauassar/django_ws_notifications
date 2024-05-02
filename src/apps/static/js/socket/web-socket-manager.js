@@ -20,7 +20,7 @@ export class WebSocketManager {
         maxAttempts = 10,
         maxMissedPongs = 5,
         reconnectDelay = 5000,
-        pingInterval = 15000
+        pingInterval = 3000
     ) {
         this.url = url
         this.reconnectOnPingPongFailed = reconnectOnPingPongFailed
@@ -143,6 +143,8 @@ export class WebSocketManager {
 
   cleanup() {
     console.log('Running cleanup...')
+    this.websocket.onclose = function () {}
+    this.websocket.close(4014, "user closed connection")
     clearInterval(this.healthCheckId)
     clearInterval(this.reconnectAttemptsId)
   }
