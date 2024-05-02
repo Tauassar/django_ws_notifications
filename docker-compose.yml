@@ -30,9 +30,14 @@ services:
   ws_backend:
     <<: *notifications_backend
     environment:
-      container_type: "WS_BACKEND"
+      CONTAINER_TYPE: "WS_BACKEND"
     ports:
       - '8003:8002'
+
+  rabbitmq_consumer:
+    <<: *notifications_backend
+    environment:
+      CONTAINER_TYPE: "RABBITMQ_CONSUMER"
 
   postgres:
     image: postgres:14.4
@@ -48,6 +53,9 @@ services:
     image: rabbitmq:management
     logging:
       driver: none
+    ports:
+      - '15672:15672'
+      - '5672:5672'
     networks:
       default:
 
