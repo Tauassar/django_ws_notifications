@@ -131,11 +131,3 @@ class NotificationsConsumer(AsyncJsonWebsocketConsumer):
         except ConnectionClosed:
             logger.warning('Channel already disconnected, cannot send server notification message')
         logger.debug(f'Sent notification with key: {key} value: {value}')
-
-    async def step_status(self, event):
-        # Send message to WebSocket
-        logger.info(event)
-        try:
-            await self.send(text_data=json.dumps(event))
-        except ConnectionClosed:
-            logger.warning('Channel already disconnected, cannot send step status event message')
