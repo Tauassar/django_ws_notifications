@@ -49,10 +49,10 @@ class NotificationsConsumer(AsyncJsonWebsocketConsumer):
 
     async def disconnect(self, close_code):
         # Leave room group
-        await self.channel_layer.group_discard(
-            self.room_group_name,
-            self.channel_name,
-        )
+        await self.channel_layer.group_discard(self.room_group_name, self.channel_name)
+
+        # in case of unexpected channel closure (if a client closes connection)
+        self.expiration_task.cancel()
 
     async def send_message_processing_error(self, message: str):
         try:
