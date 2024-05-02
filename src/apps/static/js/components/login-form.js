@@ -44,7 +44,7 @@ const loginForm = {
             </form>
         </div>
     `,
-    emits: ['userLoggedIn'],
+    emits: ['userLoggedIn', 'userLoggedOut'],
     props: {},
     data() {
         return {
