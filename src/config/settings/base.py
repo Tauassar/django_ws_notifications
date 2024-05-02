@@ -11,7 +11,7 @@ env = environ.Env()
 
 HOST_NAME = os.getenv('HOST_NAME', 'https://django-ws-notifications.com/')
 
-DEBUG = env("DEBUG", default=True)
+DEBUG = env('DEBUG', default=True)
 SECRET_KEY = env(
     'DJANGO_SECRET_KEY',
     default='-j1_x19w5$)pgd2agu*c^53+^83-eb)pkl0n4k+yprp2@jv-^f',
@@ -153,7 +153,7 @@ FIXTURE_DIRS = (str(APPS_DIR / 'fixtures'),)
 SESSION_COOKIE_HTTPONLY = True
 CSRF_COOKIE_HTTPONLY = True
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
-SESSION_COOKIE_AGE = os.getenv("SESSION_COOKIE_AGE", 3600)
+SESSION_COOKIE_AGE = os.getenv('SESSION_COOKIE_AGE', 3600)
 
 
 EMAIL_BACKEND = env(
@@ -202,7 +202,7 @@ SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': datetime.timedelta(hours=1),
     'REFRESH_TOKEN_LIFETIME': datetime.timedelta(days=1),
     'TOKEN_OBTAIN_SERIALIZER': 'apps.users.serializers.TokenObtainPairWithRoleSerializer',
-    "TOKEN_REFRESH_SERIALIZER": "apps.users.serializers.TokenRefreshSerializer",
+    'TOKEN_REFRESH_SERIALIZER': 'apps.users.serializers.TokenRefreshSerializer',
 }
 
 CORS_ALLOW_ALL_ORIGINS = True

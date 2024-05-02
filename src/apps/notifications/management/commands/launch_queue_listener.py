@@ -10,4 +10,4 @@ class Command(BaseCommand):
         td = SendNotificationListener()
         td.start()
         td.join()
-        self.stdout.write("Started Consumer Thread")
+        self.stdout.write('Started Consumer Thread')

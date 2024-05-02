@@ -1,16 +1,16 @@
 import json
 import logging
-
-import pika
 import threading
 
-from django.contrib.auth import get_user_model
+import pika
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.exceptions import ValidationError
 
 from apps.notifications.serializers import SendNotificationSerializer
 from apps.notifications.services import notify_user_by_id
+
 
 ROUTING_KEY = 'notifications.send'
 RESULT_ROUTING_KEY = 'notifications.result'
@@ -19,6 +19,7 @@ THREADS = 2
 User = get_user_model()
 
 logger = logging.getLogger(__name__)
+
 
 class SendNotificationListener(threading.Thread):
     def __init__(self):
@@ -48,7 +49,7 @@ class SendNotificationListener(threading.Thread):
                     exchange=EXCHANGE,
                     routing_key=RESULT_ROUTING_KEY,
                     body=json.dumps({
-                        "error": f"Error during payload validation: {str(err)}",
+                        'error': f'Error during payload validation: {str(err)}',
                     }),
                 )
                 raise
@@ -57,7 +58,7 @@ class SendNotificationListener(threading.Thread):
                 id=serializer.data.get('user_id'),
             )
 
-            notify_user_by_id(obj.id, serializer.data.get("payload"))
+            notify_user_by_id(obj.id, serializer.data.get('payload'))
 
             channel.basic_ack(delivery_tag=method.delivery_tag)
             channel.basic_publish(
@@ -70,30 +71,33 @@ class SendNotificationListener(threading.Thread):
                 exchange=EXCHANGE,
                 routing_key=RESULT_ROUTING_KEY,
                 body=json.dumps({
-                    "error": 'No %s matches the given query.' % User.model._meta.object_name,
+                    'error': 'No %s matches the given query.' % User.model._meta.object_name,
                 }),
             )
-            logger.warning(('No %s matches the given query.' % User.model._meta.object_name), exc_info=True)
+            logger.warning(
+                ('No %s matches the given query.' % User.model._meta.object_name),
+                exc_info=True,
+            )
 
         except ValidationError as err:
             channel.basic_publish(
                 exchange=EXCHANGE,
                 routing_key=RESULT_ROUTING_KEY,
                 body=json.dumps({
-                    "error": f"Error during payload validation: {str(err)}",
+                    'error': f'Error during payload validation: {str(err)}',
                 }),
             )
-            logger.warning("Error during payload validation", exc_info=True)
+            logger.warning('Error during payload validation', exc_info=True)
 
         except Exception as err:
             channel.basic_publish(
                 exchange=EXCHANGE,
                 routing_key=RESULT_ROUTING_KEY,
                 body=json.dumps({
-                    "error": str(err),
+                    'error': str(err),
                 }),
             )
-            logger.warning("Unknown error", exc_info=True)
+            logger.warning('Unknown error', exc_info=True)
 
     def run(self):
         logger.info('Inside LogginService:  Created Listener ')

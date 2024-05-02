@@ -5,6 +5,7 @@ from rest_framework_simplejwt import serializers as simplejwt_serializers
 
 from .tokens import IdentityToken
 
+
 User = get_user_model()
 logger = logging.getLogger(__name__)
 
@@ -31,7 +32,7 @@ class TokenObtainPairWithRoleSerializer(
                 continue
             identity[claim] = value
 
-        attrs["identity"] = str(identity)
+        attrs['identity'] = str(identity)
         return attrs
 
 
@@ -39,7 +40,7 @@ class TokenRefreshSerializer(
     simplejwt_serializers.TokenRefreshSerializer,
 ):
     def validate(self, attrs):
-        refresh = self.token_class(attrs["refresh"])
+        refresh = self.token_class(attrs['refresh'])
         attrs = super().validate(attrs)
 
         identity = IdentityToken()
@@ -52,5 +53,5 @@ class TokenRefreshSerializer(
                 continue
             identity[claim] = value
 
-        attrs["identity"] = str(identity)
+        attrs['identity'] = str(identity)
         return attrs

@@ -12,6 +12,7 @@ from rest_framework_simplejwt.exceptions import TokenError
 
 from apps.users.tokens import IdentityToken
 
+
 logger = logging.getLogger(__name__)
 
 
@@ -43,16 +44,16 @@ class TokenAuthMiddleware(BaseMiddleware):
             except TokenError as e:
                 raise TokenError(
                     {
-                        "token_class": IdentityToken.__name__,
-                        "token_type": IdentityToken.token_type,
-                        "message": e.args[0],
-                    }
+                        'token_class': IdentityToken.__name__,
+                        'token_type': IdentityToken.token_type,
+                        'message': e.args[0],
+                    },
                 ) from e
 
             user = await sync_to_async(
                 jwt_auth.get_user,
             )(validated_token)
-            user.expires_at = validated_token.get("exp")
+            user.expires_at = validated_token.get('exp')
 
         except (InvalidToken, TokenError, AuthenticationFailed) as e:
             # Token is invalid
@@ -82,7 +83,7 @@ class RoomNameValidateUserIdMiddleware(BaseMiddleware):
             user_id = int(
                 list(
                     filter(lambda item: item.isdigit(), filter(len, url_path.split('/'))),
-                )[0]
+                )[0],
             )
         except (AttributeError, IndexError):
             # Deny the connection
@@ -92,13 +93,14 @@ class RoomNameValidateUserIdMiddleware(BaseMiddleware):
         # Try to autorize the user
         aut_res = scope['user'].id == user_id
         logger.info(f"{scope['user'].id = } {type(scope['user'].id)}")
-        logger.info(f"{user_id = } {type(user_id)}")
+        logger.info(f'{user_id = } {type(user_id)}')
 
         if aut_res:
             return await self.inner(scope, receive, send)
         else:
             logger.warning(
-                f'User id {scope["user"].id} does not satisfy required user id {user_id} {aut_res}'
+                f'User id {scope["user"].id} does not satisfy '
+                f'required user id {user_id} {aut_res}'
                 ' to connect to requested channel',
             )
             # Deny the connection

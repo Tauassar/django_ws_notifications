@@ -1,8 +1,11 @@
 import logging
 
 from django.contrib.auth import get_user_model
-from django.shortcuts import render, get_object_or_404
-from drf_spectacular.utils import extend_schema_view, extend_schema, OpenApiResponse
+from django.shortcuts import get_object_or_404
+from django.shortcuts import render
+from drf_spectacular.utils import OpenApiResponse
+from drf_spectacular.utils import extend_schema
+from drf_spectacular.utils import extend_schema_view
 from rest_framework import status
 from rest_framework.generics import GenericAPIView
 from rest_framework.request import Request
@@ -10,6 +13,7 @@ from rest_framework.response import Response
 
 from . import serializers
 from .services import notify_user_by_id
+
 
 logger = logging.getLogger(__name__)
 
@@ -38,10 +42,10 @@ class SendNotificationView(GenericAPIView):
             self.get_queryset(),
             **{
                 'id': serializer.data.get('user_id'),
-            }
+            },
         )
 
-        notify_user_by_id(obj.id, serializer.data.get("payload"))
+        notify_user_by_id(obj.id, serializer.data.get('payload'))
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 

@@ -8,6 +8,6 @@ urlpatterns = [
     path(
         'send/',
         views.SendNotificationView.as_view(),
-        name='send_notification'
+        name='send_notification',
     ),
 ]
