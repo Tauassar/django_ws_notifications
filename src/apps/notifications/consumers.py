@@ -15,6 +15,7 @@ logger = logging.getLogger(__name__)
 
 class NotificationsConsumer(AsyncJsonWebsocketConsumer):
     expiration_task: Optional[Task] = None
+    expiration_task_is_sleeping: bool = True
 
     def __init__(self, *args, **kwargs):
         super().__init__(args, kwargs)
@@ -23,7 +24,9 @@ class NotificationsConsumer(AsyncJsonWebsocketConsumer):
 
     async def expire_connection(self):
         user = self.scope['user']
+        self.expiration_task_is_sleeping = True
         await asyncio.sleep(user.expires_at - time.time())
+        self.expiration_task_is_sleeping = False
 
         try:
             await self.websocket_disconnect({'code': 1000})
@@ -56,7 +59,8 @@ class NotificationsConsumer(AsyncJsonWebsocketConsumer):
         await self.channel_layer.group_discard(self.room_group_name, self.channel_name)
 
         # in case of unexpected channel closure (if a client closes connection)
-        self.expiration_task.cancel()
+        if self.expiration_task_is_sleeping:
+            self.expiration_task.cancel()
 
     async def send_message_processing_error(self, message: str):
         try:
