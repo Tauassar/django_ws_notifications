@@ -65,6 +65,7 @@ class NotificationsConsumer(AsyncJsonWebsocketConsumer):
         try:
             self.expiration_task.remove()
         except JobLookupError:
+            # if job already running .remove method raising JobLookupError, therefore we can disregard it
             ...
 
     async def send_message_processing_error(self, message: str):
