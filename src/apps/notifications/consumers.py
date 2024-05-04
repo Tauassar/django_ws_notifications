@@ -1,10 +1,12 @@
-import asyncio
 import json
 import logging
 import time
-from asyncio import Task
+from datetime import datetime, timedelta
 from typing import Optional
 
+from apscheduler.job import Job
+from apscheduler.jobstores.base import JobLookupError
+from apscheduler.triggers.date import DateTrigger
 from channels.exceptions import StopConsumer
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
 from websockets.exceptions import ConnectionClosed
@@ -14,8 +16,7 @@ logger = logging.getLogger(__name__)
 
 
 class NotificationsConsumer(AsyncJsonWebsocketConsumer):
-    expiration_task: Optional[Task] = None
-    expiration_task_is_sleeping: bool = True
+    expiration_task: Optional[Job]
 
     def __init__(self, *args, **kwargs):
         super().__init__(args, kwargs)
@@ -23,17 +24,13 @@ class NotificationsConsumer(AsyncJsonWebsocketConsumer):
         self.room_name = None
 
     async def expire_connection(self):
-        user = self.scope['user']
-        self.expiration_task_is_sleeping = True
-        await asyncio.sleep(user.expires_at - time.time())
-        self.expiration_task_is_sleeping = False
-
         try:
             await self.websocket_disconnect({'code': 1000})
         except StopConsumer:
             await self.close()
 
     async def connect(self):
+        user = self.scope["user"]
         self.room_name = self.scope['url_route']['kwargs']['room_name']
         self.room_group_name = 'notifications_%s' % self.room_name
 
@@ -49,9 +46,15 @@ class NotificationsConsumer(AsyncJsonWebsocketConsumer):
             f'\nroom name: {self.room_name}'
             f'\ngroup_name: {self.room_group_name}',
         )
-        self.expiration_task = asyncio.create_task(
-            self.expire_connection(),
-            name='expire-connection',
+
+        self.expiration_task = self.scope["scheduler"].add_job(
+            self.expire_connection,
+            trigger=DateTrigger(
+                run_date=(
+                    datetime.now(self.scope["scheduler"].timezone)
+                    + timedelta(seconds=user.expires_at - time.time())
+                ),
+            ),
         )
 
     async def disconnect(self, close_code):
@@ -59,8 +62,10 @@ class NotificationsConsumer(AsyncJsonWebsocketConsumer):
         await self.channel_layer.group_discard(self.room_group_name, self.channel_name)
 
         # in case of unexpected channel closure (if a client closes connection)
-        if self.expiration_task_is_sleeping:
-            self.expiration_task.cancel()
+        try:
+            self.expiration_task.remove()
+        except JobLookupError:
+            ...
 
     async def send_message_processing_error(self, message: str):
         try:

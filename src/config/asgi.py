@@ -1,7 +1,9 @@
 import os
 import sys
 from pathlib import Path
+from typing import Optional
 
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from django.core.asgi import get_asgi_application
 
 
@@ -23,10 +25,23 @@ django_application = get_asgi_application()
 from config.websocket import websocket_application  # noqa isort:skip
 
 
+scheduler: Optional[AsyncIOScheduler] = None
+
+def get_scheduler():
+    global scheduler
+
+    if scheduler is None:
+        scheduler = AsyncIOScheduler(timezone='Asia/Almaty')
+        scheduler.start()
+
+    return scheduler
+
+
 async def application(scope, receive, send):
     if scope['type'] == 'http':
         await django_application(scope, receive, send)
     elif scope['type'] == 'websocket':
+        scope["scheduler"] = get_scheduler()
         await websocket_application(scope, receive, send)
     else:
         raise NotImplementedError(f"Unknown scope type {scope['type']}")
