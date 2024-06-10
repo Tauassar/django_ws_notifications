@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 class TokenAuthMiddleware(BaseMiddleware):
     """
-    Custom token JWT auth middleware
+    JWT auth middleware
     """
 
     async def __call__(self, scope, receive, send):
@@ -62,7 +62,7 @@ class TokenAuthMiddleware(BaseMiddleware):
             denier = WebsocketDenier()
             return await denier(scope, receive, send)
         else:
-            logger.warning(f'User {user} authorized using JWT to use channels notifications')
+            logger.debug(f'User {user} authorized using JWT to use channels notifications')
 
         return await self.inner(dict(scope, user=user), receive, send)
 
@@ -92,8 +92,8 @@ class RoomNameValidateUserIdMiddleware(BaseMiddleware):
 
         # Try to autorize the user
         aut_res = scope['user'].id == user_id
-        logger.info(f"{scope['user'].id = } {type(scope['user'].id)}")
-        logger.info(f'{user_id = } {type(user_id)}')
+        logger.debug(f"{scope['user'].id = } {type(scope['user'].id)}")
+        logger.debug(f'{user_id = } {type(user_id)}')
 
         if aut_res:
             return await self.inner(scope, receive, send)
