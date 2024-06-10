@@ -7,8 +7,8 @@ const { createApp } = Vue;
 createApp({
     template:
         `
-        <section class="section is-flex is-flex-direction-column" style="max-height: 100vh">
-            <header>
+        <section class="section is-flex is-flex-direction-column" style="max-height: 100vh; align-items: center">
+            <header style="max-width: 1000px">
                 <div class="container">
                   <h1 class="title">
                     Демонстрационная страница сервиса нотификаций
@@ -16,7 +16,7 @@ createApp({
                 </div>
                 <login-form @userLoggedIn="authorize_user" @userLoggedOut="logout_user" authorize_callback="authorize_user" class="mt-3"></login-form>
             </header>
-            <messages-box class="mt-3" ref="messagesBox" style="flex: 1 1 auto"></messages-box>
+            <messages-box style="max-width: 1000px" class="mt-3" ref="messagesBox" style="flex: 1 1 auto"></messages-box>
 
         </section>
     `,
